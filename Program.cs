@@ -36,13 +36,11 @@ List<ColorButton> ColorButtons = new List<ColorButton>()
     new ColorButton {bounds = new Rectangle(300,30,30,30), color = Color.White}
 };
 
+Slider brushSize = new Slider { start = 500, end = 700, currentPos = (700+500)/2, posY = 45, sliderRadius = brushRadius, color = Color.Blue};
+
 while (!WindowShouldClose())
 {
-    if (IsMouseButtonDown(MouseButton.Left))
-    {
-        Draw();
-        countPastThings();
-    }
+
     if (IsMouseButtonReleased(MouseButton.Left)) isPastCircle = false;
 
     if (IsMouseButtonPressed(MouseButton.Left))
@@ -54,8 +52,18 @@ while (!WindowShouldClose())
                 currentColor = btn.color;
             }
         }
+        brushSize.IsDragging();
     }
+    if (IsMouseButtonDown(MouseButton.Left))
+    {
 
+        if (brushSize.isDragging) brushRadius = brushSize.Dragging();
+        else
+        {
+            Draw();
+            countPastThings();
+        }
+    }
 
 
     BeginDrawing();
@@ -71,6 +79,8 @@ while (!WindowShouldClose())
     DrawColorButtons();
 
     DrawCursorCoordinates();
+
+    brushSize.DrawSlider();
 
     EndDrawing();
 }
@@ -94,7 +104,7 @@ void DrawColorButtons()
 {
     foreach(ColorButton btn in ColorButtons)
     {
-        DrawRectangleRec(btn.bounds, btn.color);
+        btn.Draw();
     }
 }
 
@@ -161,5 +171,42 @@ struct ColorButton() //пишу в первый раз, изучить дета�
             return color;
         }
         return null;
+    }
+}
+
+struct Slider()
+{
+    public int start;
+    public int end;
+    public int currentPos;
+    public int posY;
+    public int sliderRadius;
+    public Color color;
+    public bool isDragging = false;
+
+    public void IsDragging()
+    {
+        int mouseX = GetMouseX();
+        int mouseY = GetMouseY();
+        if (mouseY >= posY - sliderRadius && mouseY <= posY + sliderRadius && mouseX <= currentPos+sliderRadius && mouseX >= currentPos-sliderRadius )
+        {
+            isDragging = true;
+        }
+        else isDragging = false;
+    }
+
+    public int Dragging()
+    {
+        int mouseX = GetMouseX();
+        currentPos = mouseX;
+        return ((currentPos - start) / 2 + 1);
+    }
+
+    public void DrawSlider()
+    {
+        DrawRectangle(start, posY-posY/4, end - start, posY/2, Color.DarkBlue);
+        if (currentPos < start) currentPos = start;
+        if (currentPos > end) currentPos = end;
+        DrawCircle(currentPos, posY, sliderRadius, color);
     }
 }
